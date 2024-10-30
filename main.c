@@ -203,47 +203,6 @@ int isRomanNumber(char* romanNumbers){
     }
 
     return 0;
-
-    /*
-    char beforeIndex = ' ';
-    char errorChar = ' ';
-    int bigNumber = 0;
-    int count = 0;
-    int maxLong = getSize(romanNumbers);
-    for(int i = 0; i < maxLong; i++){
-        if(convertRomanNumber(beforeIndex) < convertRomanNumber(romanNumbers[i]) && beforeIndex != ' '){
-            if(errorChar == beforeIndex){
-                return 0;
-            }
-
-            if(beforeIndex == 'V' || beforeIndex == 'L' || beforeIndex == 'D'){
-                return 0;
-            }
-
-            errorChar = beforeIndex;
-        }else if(beforeIndex == romanNumbers[i] && (beforeIndex == 'V' || beforeIndex == 'L' || beforeIndex == 'D')){
-            return 0;
-        }
-
-        if(romanNumbers[i] == beforeIndex || beforeIndex == ' '){
-            count++;
-        }else{
-            count = 0;
-        }
-
-        if((bigNumber < convertRomanNumber(romanNumbers[i]) && i >= 2) || count >= 4){
-            return 0;
-        }
-
-        if(convertRomanNumber(romanNumbers[i]) > convertRomanNumber(beforeIndex)) {
-            bigNumber = convertRomanNumber(romanNumbers[i]);
-        }
-
-        beforeIndex = romanNumbers[i];
-    }
-
-    return 1;
-     */
 }
 
 int isMath(char* romanNumber){
