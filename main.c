@@ -45,19 +45,6 @@ Node* deleteNode(Node* head, int delNum){
     return head;
 }
 
-void printList(Node* head)
-{
-    while (head != NULL) {
-        if(head->opp != '='){
-            printf("%d %c ", head->data, head->opp);
-        }else{
-            printf("%d", head->data);
-        }
-        head = head->next;
-    }
-    printf("\n");
-}
-
 int getSize(const char* text){
     int result = 0;
 
