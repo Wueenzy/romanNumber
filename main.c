@@ -277,7 +277,6 @@ int makeCalculation(char* romanNumber){
     char opp;
     char* opp1 = "*+";
     char* opp2 = "/-";
-    //printList(intArray);
     for(int i = 0; i < 2;i++){
         dataTemp = intArray;
         intTemp1 = dataTemp->data;
@@ -293,7 +292,6 @@ int makeCalculation(char* romanNumber){
                 if(dataTemp != NULL){
                     dataTemp->data = calculation(intTemp1, intTemp2, opp);
                 }
-                //printList(intArray);
             }
             if(dataTemp != NULL){
                 opp = dataTemp->opp;
