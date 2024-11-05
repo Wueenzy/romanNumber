@@ -196,7 +196,7 @@ int isMath(char* romanNumber){
     int maxLong = getSize(romanNumber);
     int count = 0;
     for(int i = 0; i < maxLong; i++){
-        if(romanNumber[i] == '*' || romanNumber[i] == '/' || romanNumber[i] == '+' || romanNumber[i] == '-'){
+        if(romanNumber[i] == 'x' || romanNumber[i] == '/' || romanNumber[i] == '+' || romanNumber[i] == '-'){
             count++;
         }
     }
@@ -208,7 +208,7 @@ int calculation(int first, int second, char operation){
     int result = 0;
 
     switch (operation) {
-        case '*':
+        case 'x':
             result = first*second;
             break;
         case '/':
@@ -275,7 +275,7 @@ int makeCalculation(char* romanNumber){
     int intTemp1;
     int intTemp2;
     char opp;
-    char* opp1 = "*+";
+    char* opp1 = "x+";
     char* opp2 = "/-";
     for(int i = 0; i < 2;i++){
         dataTemp = intArray;
