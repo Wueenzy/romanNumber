@@ -240,7 +240,7 @@ Node* convertCalculation(char* romanNumber) {
         if(romanNumber[i] == ' '){
             continue;
         }
-        if (romanNumber[i] == '*' || romanNumber[i] == '/' || romanNumber[i] == '+' || romanNumber[i] == '-') {
+        if (romanNumber[i] == 'x' || romanNumber[i] == '/' || romanNumber[i] == '+' || romanNumber[i] == '-') {
             intArray->data = convertRomanNumbers(split);
             if(strcmp(convertNumbers(intArray->data), split) != 0){
                 return zero;
