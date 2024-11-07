@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,78 +13,167 @@
  * Kural 7: M = 1000, I# = 1000 karışıklığı önlemek adına sadece 1000 kullanılan yerlerde M yi kullanılacak (Örnek: V#MMM = 8000)
  */
 
-typedef struct Node {
-    int data;
-    char opp;
-    struct Node *next;
-} Node;
+#define MAX_LEN 100
 
-Node* deleteNode(Node* head, int delNum){
-    Node* temp = head;
-    Node* prev = NULL;
+char* roman_sort = "MDCLXVI";
 
-    if(temp == NULL){
-        return head;
+char* roman_group_first[3] = {"D", "L", "V"};
+char* roman_ungroup_first[3] = {"CCCCC", "XXXXX", "IIIII"};
+
+char* roman_group_second_diff[6] = {"M", "C", "X"};
+char* roman_ungroup_second_diff[6] = {"CCCCCCCCCC", "XXXXXXXXXX", "IIIIIIIIII"};
+
+char* roman_group_first_diff[6] = {"D", "M", "L", "C", "V", "X"};
+char* roman_ungroup_first_diff[6] = {"CCCCC", "DD", "XXXXX", "LL", "IIIII", "VV"};
+
+char *roman_group_second[6] = {"CD", "CM", "XL", "XC", "IV", "IX"};
+char *roman_ungroup_second[6] = {"CCCC", "CCCCCCCCC", "XXXX", "XXXXXXXXX", "IIII", "IIIIIIIII"};
+
+char *roman_ungroup_fix[3] = {"DCD", "LXL", "VIV"};
+char *roman_group_fix[3] = {"CM", "XC", "IX"};
+
+char* replaceWord(const char* s, const char* oldW, const char* newW)
+{
+    char* result;
+    int i, cont = 0;
+    int newWlen = strlen(newW);
+    int oldWlen = strlen(oldW);
+
+    for (i = 0; s[i] != '\0'; i++) {
+        if (strstr(&s[i], oldW) == &s[i]) {
+            cont++;
+
+            i += oldWlen - 1;
+        }
     }
 
-    if (delNum == temp->data) {
-        head = temp->next;
-        free(temp);
-        return head;
+    result = (char*)malloc(i + cont * (newWlen - oldWlen) + 1);
+
+    i = 0;
+    while (*s) {
+        if (strstr(s, oldW) == s) {
+            strcpy(&result[i], newW);
+            i += newWlen;
+            s += oldWlen;
+        }
+        else
+            result[i++] = *s++;
     }
 
-    for (int i = 1; temp != NULL && temp->data != delNum; i++) {
-        prev = temp;
-        temp = temp->next;
-    }
-
-    if(temp != NULL && prev != NULL){
-        prev->next = temp->next;
-        free(temp);
-    }
-
-    return head;
-}
-
-int getSize(const char* text){
-    int result = 0;
-
-    while(text[result] != '\0'){
-        result++;
-    }
-
+    result[i] = '\0';
     return result;
 }
 
-int convertRomanNumber(char romanNumber){
-    int result = 0;
-    switch (romanNumber) {
+void sortRoman(char *roman) {
+    int len = strlen(roman);
+    for (int i = 0; i < len - 1; i++) {
+        for (int j = 0; j < len - i - 1; j++) {
+            if (strchr(roman_sort, roman[j]) > strchr(roman_sort, roman[j + 1])) {
+                char temp = roman[j];
+                roman[j] = roman[j + 1];
+                roman[j + 1] = temp;
+            }
+        }
+    }
+}
+
+char* ungroup(const char* s) {
+    char* result = (char*)malloc(strlen(s) + 1);
+    strcpy(result, s);
+    for(int i = 0; i < 6; i++) {
+        result = replaceWord(result, roman_group_second[i], roman_ungroup_second[i]);
+    }
+    for(int i = 0; i < 3; i++) {
+        result = replaceWord(result, roman_group_first[i], roman_ungroup_first[i]);
+    }
+    return result;
+}
+
+char* group(const char* s) {
+    char* result = (char*)malloc(strlen(s) + 1);
+    strcpy(result, s);
+    for(int i = 5; i >= 0; i--) {
+        while(strcmp(result, replaceWord(result, roman_ungroup_first_diff[i], roman_group_first_diff[i])) != 0) {
+            result = replaceWord(result, roman_ungroup_first_diff[i], roman_group_first_diff[i]);
+        }
+    }
+    for(int i = 5; i >= 0; i--) {
+        while(strcmp(result, replaceWord(result, roman_ungroup_second[i], roman_group_second[i])) != 0) {
+            result = replaceWord(result, roman_ungroup_second[i], roman_group_second[i]);
+        }
+    }
+    for(int i = 2; i >= 0; i--) {
+        while(strcmp(result, replaceWord(result, roman_ungroup_fix[i], roman_group_fix[i])) != 0) {
+            result = replaceWord(result, roman_ungroup_fix[i], roman_group_fix[i]);
+        }
+    }
+    return result;
+}
+
+void plus(char *result, char *roman1, char *roman2) {
+    while(strcmp(roman1, ungroup(roman1)) != 0) {
+        roman1 = ungroup(roman1);
+    }
+    while(strcmp(roman2, ungroup(roman2)) != 0) {
+        roman2 = ungroup(roman2);
+    }
+    strcpy(result, roman1);
+    strcat(result, roman2);
+    sortRoman(result);
+}
+
+char* sub(char *result, const char *roman1, const char *roman2) {
+    while(strcmp(roman1, ungroup(roman1)) != 0) {
+        roman1 = ungroup(roman1);
+    }
+    while(strcmp(roman2, ungroup(roman2)) != 0) {
+        roman2 = ungroup(roman2);
+    }
+    strcpy(result, roman1);
+    int size = strlen(roman2);
+    for (int i = 0; i < size; i++) {
+        char *pos = strchr(result, roman2[i]);
+        if (pos != NULL) {
+            memmove(pos, pos + 1, strlen(pos));
+        }else {
+            char number = roman2[i];
+            while(1) {
+                char* pos2 = strchr(roman_sort, number);
+                pos = strchr(result, *(pos2 - 1));
+                if(pos == NULL) {
+                    number = *(pos2 - 1);
+                    continue;
+                }
+                switch (*(pos2 - 1)) {
+                    case 'M':
+                        result = replaceWord(result, "M", "CCCCCCCCCC");
+                        break;
+                    case 'C':
+                        result = replaceWord(result, "C", "XXXXXXXXXX");
+                        break;
+                    case 'X':
+                        result = replaceWord(result, "X", "IIIIIIIIII");
+                        break;
+                }
+                i--;
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+int convertRomanNumber(char roman) {
+    switch (roman) {
         case 'I':
-            result = 1;
-            break;
-        case 'V':
-            result = 5;
-            break;
+            return 1;
         case 'X':
-            result = 10;
-            break;
-        case 'L':
-            result = 50;
-            break;
+            return 10;
         case 'C':
-            result = 100;
-            break;
-        case 'D':
-            result = 500;
-            break;
+            return 100;
         case 'M':
-            result = 1000;
-            break;
-        default:
-            break;
+            return 1000;
     }
-
-    return result;
 }
 
 int convertNumber(int number){
@@ -91,54 +181,47 @@ int convertNumber(int number){
     switch (number) {
         case 1:
             result = 'I';
-            break;
+        break;
         case 5:
             result = 'V';
-            break;
+        break;
         case 10:
             result = 'X';
-            break;
+        break;
         case 50:
             result = 'L';
-            break;
+        break;
         case 100:
             result = 'C';
-            break;
+        break;
         case 500:
             result = 'D';
-            break;
+        break;
         case 1000:
             result = 'M';
-            break;
+        break;
         default:
             result = ' ';
-            break;
+        break;
     }
 
     return result;
 }
 
-int convertRomanNumbers(char* romanNumbers){
-    int maxLong = getSize(romanNumbers);
-    int result = 0;
-    char beforeIndex = ' ';
-    for(int i = 0; i < maxLong ; i++){
-        if(romanNumbers[i] == '#'){
-            result *= 1000;
-            beforeIndex = ' ';
-            continue;
-        }else if(convertRomanNumber(beforeIndex) < convertRomanNumber(romanNumbers[i]) && beforeIndex != ' '){
-            result -= 2 * convertRomanNumber(beforeIndex);
-        }
-        result += convertRomanNumber(romanNumbers[i]);
-        beforeIndex = romanNumbers[i];
+int convertRomanNumbers(char* roman) {
+    while(strcmp(roman, ungroup(roman)) != 0) {
+        roman = ungroup(roman);
     }
-
+    int len = strlen(roman);
+    int result = 0;
+    for (int i = 0; i < len; i++) {
+        result += convertRomanNumber(roman[i]);
+    }
     return result;
 }
 
 char* convertNumbers(int number){
-    char* romanNumber = "";
+    char* romanNumber = (char*)malloc(256 * sizeof(char));
     romanNumber[0] = '\0';
     int numberDivision = number;
     int numberLeft = 0;
@@ -184,130 +267,14 @@ char* convertNumbers(int number){
 }
 
 int isRomanNumber(char* romanNumbers){
-
     if(strcmp(convertNumbers(convertRomanNumbers(romanNumbers)),romanNumbers) == 0){
         return 1;
     }
-
     return 0;
 }
 
-int isMath(char* romanNumber){
-    int maxLong = getSize(romanNumber);
-    int count = 0;
-    for(int i = 0; i < maxLong; i++){
-        if(romanNumber[i] == '*' || romanNumber[i] == '/' || romanNumber[i] == '+' || romanNumber[i] == '-'){
-            count++;
-        }
-    }
-
-    return count;
-}
-
-int calculation(int first, int second, char operation){
-    int result = 0;
-
-    switch (operation) {
-        case '*':
-            result = first*second;
-            break;
-        case '/':
-            result = first/second;
-            break;
-        case '+':
-            result = first+second;
-            break;
-        case '-':
-            result = first-second;
-            break;
-        default:
-            return 0;
-    }
-
-    return result;
-}
-
-Node* convertCalculation(char* romanNumber) {
-    Node* intArray = (Node*)malloc(sizeof(Node));
-    Node* result = intArray;
-    Node* zero = (Node*)malloc(sizeof(Node));
-    zero->data = 0;
-    char* split = (char*)malloc(getSize(romanNumber) * sizeof(char));
-    split[0] = '\0';
-    int maxLong = getSize(romanNumber);
-
-    for (int i = 0; i < maxLong; i++) {
-        if(romanNumber[i] == ' '){
-            continue;
-        }
-        if (romanNumber[i] == '*' || romanNumber[i] == '/' || romanNumber[i] == '+' || romanNumber[i] == '-') {
-            intArray->data = convertRomanNumbers(split);
-            if(strcmp(convertNumbers(intArray->data), split) != 0){
-                return zero;
-            }
-            intArray->opp = romanNumber[i];
-            intArray->next = (Node*) malloc(sizeof(Node));
-            intArray = intArray->next;
-            intArray->next = NULL;
-            split[0] = '\0';
-        } else {
-            char buffer[2] = {romanNumber[i], '\0'};
-            sprintf(split, "%s%s", split, buffer);
-        }
-    }
-    intArray->data = convertRomanNumbers(split);
-    if(strcmp(convertNumbers(intArray->data), split) != 0){
-        return zero;
-    }
-    intArray->opp = '=';
-
-    free(split);
-
-    return result;
-}
-
-int makeCalculation(char* romanNumber){
-    Node* intArray = convertCalculation(romanNumber);
-    if(intArray->data == 0){
-        return 0;
-    }
-    Node* dataTemp;
-    int intTemp1;
-    int intTemp2;
-    char opp;
-    char* opp1 = "*+";
-    char* opp2 = "/-";
-    for(int i = 0; i < 2;i++){
-        dataTemp = intArray;
-        intTemp1 = dataTemp->data;
-        intTemp2 = 0;
-        opp = dataTemp->opp;
-        while(1){
-            dataTemp = dataTemp->next;
-            if(dataTemp != NULL){
-                intTemp2 = dataTemp->data;
-            }
-            if(opp == opp1[i] || opp == opp2[i]){
-                intArray = deleteNode(intArray, intTemp1);
-                if(dataTemp != NULL){
-                    dataTemp->data = calculation(intTemp1, intTemp2, opp);
-                }
-            }
-            if(dataTemp != NULL){
-                opp = dataTemp->opp;
-                intTemp1 = dataTemp->data;
-            }
-            if(opp == '='){
-                break;
-            }
-        }
-    }
-
-    return intArray->data;
-}
-
 int main(int argc, char** argv) {
-    if(argc == 3){
+    if(argc >= 3){
         if(strcmp(argv[1], "-n") == 0){
             int number;
             sscanf(argv[2], "%d", &number);
@@ -317,20 +284,43 @@ int main(int argc, char** argv) {
             }
             char* romanNumber = convertNumbers(number);
             printf("%s", romanNumber);
+        }else if(strcmp(argv[1], "-rp") == 0){
+            char* romanNumber1 = argv[2];
+            char* romanNumber2 = argv[3];
+            if(isRomanNumber(romanNumber1) == 0 || isRomanNumber(romanNumber2) == 0){
+                printf("It's not a roman number!");
+                return 0;
+            }
+            char* result = (char*)malloc(256 * sizeof(char));
+            plus(result, romanNumber1, romanNumber2);
+
+            while(strcmp(result, group(result)) != 0) {
+                result = group(result);
+            }
+
+            printf("%s", result);
+        }else if(strcmp(argv[1], "-rs") == 0){
+            char* romanNumber1 = argv[2];
+            char* romanNumber2 = argv[3];
+            if(isRomanNumber(romanNumber1) == 0 || isRomanNumber(romanNumber2) == 0){
+                printf("It's not a roman number!");
+                return 0;
+            }
+            char* result = (char*)malloc(256 * sizeof(char));
+            result = sub(result, romanNumber1, romanNumber2);
+
+            while(strcmp(result, group(result)) != 0) {
+                result = group(result);
+            }
+
+            printf("%s", result);
         }else if(strcmp(argv[1], "-r") == 0){
             char* romanNumber = argv[2];
             int number = 0;
-            if(isMath(romanNumber)){
-                number = makeCalculation(romanNumber);
-            }else{
-                number = convertRomanNumbers(romanNumber);
-                if(isRomanNumber(romanNumber) == 0){
-                    printf("It's not a roman number!");
-                    return 0;
-                }
-            }
 
-            if(number == 0){
+            number = convertRomanNumbers(romanNumber);
+
+            if(isRomanNumber(romanNumber) == 0 || number == 0){
                 printf("It's not a roman number!");
                 return 0;
             }
@@ -340,5 +330,6 @@ int main(int argc, char** argv) {
     }else{
         printf("Usage: romanNumerals.exe -r/-n {inputValue}\n    -r -> Roman Number to Number\n    -n -> Number to Roman Number");
     }
+
     return 0;
 }
